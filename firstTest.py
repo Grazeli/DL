@@ -5,12 +5,23 @@ import numpy as np
 import importDataset
 import sklearn
 import time
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Conv2D, MaxPooling2D, Flatten
+from keras.utils import np_utils
+from keras.utils import plot_model
+from keras.models import model_from_json
+from sklearn.metrics import classification_report,confusion_matrix
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
 print( 'Using Keras version', keras.__version__)
 
 print('Start')
 time_start = time.time()
 
-x_train, y_train, x_validation, y_validation =  importDataset.importDataset()
+#x_train, y_train, x_validation, y_validation =  importDataset.import_dataset()
+train_generator, val_generator = importDataset.data_generator()
 
 print('End import dataset')
 
@@ -35,7 +46,7 @@ time_end = time.time()
 print(f'End loading time: {time_end - time_start}')
 
 #Adapt the labels to the one-hot vector syntax required by the softmax
-from keras.utils import np_utils
+
 y_train = np_utils.to_categorical(y_train, 29)
 y_validation = np_utils.to_categorical(y_validation, 29)
 
@@ -46,8 +57,7 @@ input_shape = (img_rows, img_cols, channels)
 #x_validation = x_validation.reshape(len(y_validation), img_rows, img_cols, channels)
 
 #Define the NN architecture
-from keras.models import Sequential
-from keras.layers import Dense, Activation, Conv2D, MaxPooling2D, Flatten
+
 #Two hidden layers
 model = Sequential()
 model.add(Conv2D(8, 3, 3, activation='relu', input_shape=input_shape))
@@ -60,7 +70,6 @@ model.add(Dense(29, activation=(tf.nn.softmax)))
 
 #Model visualization
 #We can plot the model by using the ```plot_model``` function. We need to install *pydot, graphviz and pydot-ng*.
-#from keras.util import plot_model
 #plot_model(model, to_file='model.png', show_shapes=true)
 
 #Compile the NN
@@ -75,9 +84,7 @@ history = model.fit(x_train,y_train,validation_data=(x_validation, y_validation)
 #print('validation accuracy:', score[1])
 
 ##Store Plots
-import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 #Accuracy plot
 plt.plot(history.history['accuracy'])
 plt.plot(history.history['val_accuracy'])
@@ -97,8 +104,7 @@ plt.legend(['train','val'], loc='upper left')
 plt.savefig('test1_fnn_loss.pdf')
 
 #Confusion Matrix
-from sklearn.metrics import classification_report,confusion_matrix
-import numpy as np
+
 #Compute probabilities
 Y_pred = model.predict(x_validation)
 #Assign most probable label
@@ -110,7 +116,6 @@ y_pred = np.argmax(Y_pred, axis=1)
 #print(confusion_matrix(np.argmax(y_validation,axis=1), y_pred))
 
 #Saving model and weights
-#from keras.models import model_from_json
 #model_json = model.to_json()
 #with open('model.json', 'w') as json_file:
 #        json_file.write(model_json)
