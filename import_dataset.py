@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 import csv
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 path_data = "data_256/"
 path_metadata = "MAMe_metadata/"
