@@ -81,9 +81,36 @@ history = model.fit_generator(
     steps_per_epoch=train_steps,
     validation_data=val_generator,
     validation_steps=val_steps,
-    epochs=20,
-    workers=40
+    epochs=2,
+    workers=1
 )
+
+# Saving model and weights
+#model_json = model.to_json()
+#with open('model.json', 'w') as json_file:
+#    json_file.write(model_json)
+weights_file = "weights-test1.hdf5"
+#model.save_weights(weights_file, overwrite=True)
+
+# Loading model and weights
+#json_file = open('model.json', 'r')
+#model_json = json_file.read()
+#json_file.close()
+#model = model_from_json(model_json)
+#model.load_weights(weights_file)
+
+# Confusion Matrix
+
+# Compute probabilities
+y_pred = model.predict_generator(val_generator)
+# Assign most probable label
+y_pred = np.argmax(y_pred, axis=1)
+# Plot statistics
+# print( 'Analysis of results' )
+# target_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+print(confusion_matrix(val_generator.classes, y_pred))
+print(classification_report(val_generator.classes, y_pred))
+
 
 # Evaluate the model with test set
 # score = model.evaluate(x_validation, y_validation, verbose=0)
@@ -93,13 +120,13 @@ history = model.fit_generator(
 ##Store Plots
 matplotlib.use('Agg')
 # Accuracy plot
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
 plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
-plt.savefig('test1_fnn_accuracy.pdf')
+plt.savefig('test1_cnn_accuracy.pdf')
 plt.close()
 # Loss plot
 plt.plot(history.history['loss'])
@@ -108,30 +135,5 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
-plt.savefig('test1_fnn_loss.pdf')
+plt.savefig('test1_cnn_loss.pdf')
 
-# Confusion Matrix
-
-# Compute probabilities
-Y_pred = model.predict_generator(val_generator)
-# Assign most probable label
-y_pred = np.argmax(Y_pred, axis=1)
-# Plot statistics
-# print( 'Analysis of results' )
-# target_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-# print(classification_report(np.argmax(y_validation,axis=1), y_pred,target_names=target_names))
-# print(confusion_matrix(np.argmax(y_validation,axis=1), y_pred))
-
-# Saving model and weights
-# model_json = model.to_json()
-# with open('model.json', 'w') as json_file:
-#        json_file.write(model_json)
-# weights_file = "weights-test1_"+str(score[1])+".hdf5"
-# model.save_weights(weights_file,overwrite=True)
-
-# Loading model and weights
-# json_file = open('model.json','r')
-# model_json = json_file.read()
-# json_file.close()
-# model = model_from_json(model_json)
-# model.load_weights(weights_file)

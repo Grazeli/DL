@@ -76,13 +76,18 @@ def create_dataframes_csv():
         elif row['Subset'] == 'test':
             test_df = test_df.append({"Image file": row['Image file'], "Medium": y}, ignore_index=True)
 
-    # train_df = pd.get_dummies(train_df, columns=["Medium"], prefix="", prefix_sep="")
-    # val_df = pd.get_dummies(val_df, columns=["Medium"], prefix="", prefix_sep="")
-    # test_df = pd.get_dummies(test_df, columns=["Medium"], prefix="", prefix_sep="")
 
     train_df.to_csv(f"{path_metadata}/train_df.csv", index=False)
     val_df.to_csv(f"{path_metadata}/val_df.csv", index=False)
     test_df.to_csv(f"{path_metadata}/test_df.csv", index=False)
+
+
+def get_validation_from_csv():
+    val_df = pd.read_csv(f"{path_metadata}/val_df.csv")
+    val_df = pd.get_dummies(val_df, columns=["Medium"], prefix="", prefix_sep="")
+    x_validation = [np.asarray(Image.open(f"{path_data}/{image_name}")) / 255 for image_name in val_df["Image file"]]
+    y_validation = val_df.values[:, 1:]
+    return np.array(x_validation), np.array(y_validation)
 
 
 def preprocess_image(image):
@@ -114,7 +119,7 @@ def data_generators(batch_size):
         x_col="Image file",
         y_col="Medium",
         class_mode="categorical",
-        shuffle=True,
+        shuffle=False,
         # seed=45
     )
     return train_generator, val_generator
