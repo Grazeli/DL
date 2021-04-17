@@ -81,16 +81,16 @@ history = model.fit_generator(
     steps_per_epoch=train_steps,
     validation_data=val_generator,
     validation_steps=val_steps,
-    epochs=2,
-    workers=1
+    epochs=20,
+    workers=40
 )
 
 # Saving model and weights
-#model_json = model.to_json()
-#with open('model.json', 'w') as json_file:
-#    json_file.write(model_json)
+model_json = model.to_json()
+with open('model.json', 'w') as json_file:
+    json_file.write(model_json)
 weights_file = "weights-test1.hdf5"
-#model.save_weights(weights_file, overwrite=True)
+model.save_weights(weights_file, overwrite=True)
 
 # Loading model and weights
 #json_file = open('model.json', 'r')
