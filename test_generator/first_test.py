@@ -17,7 +17,7 @@ import sys
 # print('Using Keras version', keras.__version__)
 
 # Experimentation name (For saved images)
-name = 'test1'
+name = 'initialCNN'
 
 print('Start')
 time_start = time.time()

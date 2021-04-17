@@ -2,18 +2,17 @@ from __future__ import division
 import keras
 import tensorflow as tf
 import numpy as np
-import importDataset
+import import_dataset
 import sklearn
 import time
 print( 'Using Keras version', keras.__version__)
 
-name = "testOld"
+name = "initial_cnn"
 
 print('Start')
 time_start = time.time()
 
-x_train, y_train, x_validation, y_validation =  importDataset.importDataset()
-
+x_train, y_train, x_validation, y_validation =  import_dataset.importDataset()
 x_train = np.array(x_train).astype('float32')
 x_train = x_train / 255
 
@@ -51,23 +50,20 @@ model.add(Conv2D(16, 3, 3, activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Flatten())
 model.add(Dense(8, activation='relu'))
-model.add(Dense(29, activation=(tf.nn.softmax)))
-
-#Model visualization
-#We can plot the model by using the ```plot_model``` function. We need to install *pydot, graphviz and pydot-ng*.
-#from keras.util import plot_model
-#plot_model(model, to_file='model.png', show_shapes=true)
+model.add(Dense(29, activation='softmax'))
 
 #Compile the NN
-model.compile(optimizer='sgd',loss='categorical_crossentropy',metrics=['accuracy'])
+opt = 'sgd'
+
+model.compile(optimizer=opt,loss='categorical_crossentropy',metrics=['accuracy'])
 
 #Start training
 history = model.fit(x_train,y_train,validation_data=(x_validation, y_validation), batch_size=128,epochs=50)
 
 #Evaluate the model with test set
-#score = model.evaluate(x_validation, y_validation, verbose=0)
-#print('validation loss:', score[0])
-#print('validation accuracy:', score[1])
+score = model.evaluate(x_validation, y_validation, verbose=0)
+print('validation loss:', score[0])
+print('validation accuracy:', score[1])
 
 ##Store Plots
 import matplotlib
