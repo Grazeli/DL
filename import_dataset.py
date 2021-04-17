@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 import csv
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing.image import ImageDataGenerator
 
 path_data = "data_256/"
 path_metadata = "MAMe_metadata/"
@@ -47,19 +47,17 @@ def import_dataset():
     return x_train, y_train, x_validation, y_validation
 
 
-def data_generator():
+def create_dataframes_csv():
     """
-    Create an image generator for the corresponding partition
-    :param partition:
-    :return:
+    Create all dataframes and export them to csv files to load them easier and faster later on
     """
     print("Importing data generators")
 
     dataset_info = pd.read_csv(path_metadata + "MAMe_dataset.csv")
 
-    dict_labels = get_dict_labels()
     train_df = pd.DataFrame(columns=["Image file", "Medium"])
     val_df = pd.DataFrame(columns=["Image file", "Medium"])
+    test_df = pd.DataFrame(columns=["Image file", "Medium"])
 
     print(f'Length: {len(dataset_info.index)}')
 
@@ -67,30 +65,56 @@ def data_generator():
         if idx % 1000 == 0:
             print(idx)
 
-        y = dict_labels[row['Medium']]
+        y = row['Medium'].strip()
 
         if row['Subset'] == 'train':
-            train_df.append([row['Image file'], y])
+            train_df = train_df.append({"Image file": row['Image file'], "Medium": y}, ignore_index=True)
 
         elif row['Subset'] == 'val':
-            val_df.append([row['Image file'], y])
+            val_df = val_df.append({"Image file": row['Image file'], "Medium": y}, ignore_index=True)
 
-    train_datagen = ImageDataGenerator()
+        elif row['Subset'] == 'test':
+            test_df = test_df.append({"Image file": row['Image file'], "Medium": y}, ignore_index=True)
+
+    # train_df = pd.get_dummies(train_df, columns=["Medium"], prefix="", prefix_sep="")
+    # val_df = pd.get_dummies(val_df, columns=["Medium"], prefix="", prefix_sep="")
+    # test_df = pd.get_dummies(test_df, columns=["Medium"], prefix="", prefix_sep="")
+
+    train_df.to_csv(f"{path_metadata}/train_df.csv", index=False)
+    val_df.to_csv(f"{path_metadata}/val_df.csv", index=False)
+    test_df.to_csv(f"{path_metadata}/test_df.csv", index=False)
+
+
+def preprocess_image(image):
+    return image/255
+
+
+def data_generators(batch_size):
+    train_df = pd.read_csv(f"{path_metadata}/train_df.csv")
+    val_df = pd.read_csv(f"{path_metadata}/val_df.csv")
+    # columns = list(get_dict_labels().keys())
+    train_datagen = ImageDataGenerator(preprocessing_function=preprocess_image)
+    print("Creating train generator")
     train_generator = train_datagen.flow_from_dataframe(
         train_df,
         directory=path_data,
-        batch_size=32,
+        batch_size=batch_size,
         x_col="Image file",
         y_col="Medium",
+        class_mode="categorical",
+        shuffle=True
         # seed=45
     )
-    val_datagen = ImageDataGenerator()
+    print("Creating val generator")
+    val_datagen = ImageDataGenerator(preprocessing_function=preprocess_image)
     val_generator = val_datagen.flow_from_dataframe(
         val_df,
         directory=path_data,
-        batch_size=32,
+        batch_size=batch_size,
         x_col="Image file",
         y_col="Medium",
+        class_mode="categorical",
+        shuffle=True,
         # seed=45
     )
     return train_generator, val_generator
