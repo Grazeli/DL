@@ -16,6 +16,9 @@ import sys
 
 # print('Using Keras version', keras.__version__)
 
+# Experimentation name (For saved images)
+name = 'test1'
+
 print('Start')
 time_start = time.time()
 
@@ -69,6 +72,7 @@ model.add(Dense(29, activation='softmax'))
 opt = tf.keras.optimizers.Adam(
     lr=0.0001,
 )
+opt = 'sgd'
 
 model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
@@ -81,8 +85,8 @@ history = model.fit_generator(
     steps_per_epoch=train_steps,
     validation_data=val_generator,
     validation_steps=val_steps,
-    epochs=20,
-    workers=40
+    epochs=50,
+    workers=80
 )
 
 # Saving model and weights
@@ -126,7 +130,7 @@ plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
-plt.savefig('test1_cnn_accuracy.pdf')
+plt.savefig(name + '_accuracy.pdf')
 plt.close()
 # Loss plot
 plt.plot(history.history['loss'])
@@ -135,5 +139,5 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
-plt.savefig('test1_cnn_loss.pdf')
+plt.savefig(name + '_loss.pdf')
 

@@ -4,8 +4,8 @@ from PIL import Image
 import csv
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-path_data = "data_256/"
-path_metadata = "MAMe_metadata/"
+path_data = "../data_256/"
+path_metadata = "../MAMe_metadata/"
 
 
 def get_dict_labels():
