@@ -46,22 +46,22 @@ target_classes = 29
 
 ### Transfer learning ###
 name = 'test_transfer_learning'
-epochs = 10
-opti = optimizers.SGD(lr=0.0001, momentum=0.9)
+epochs = 1
+opti = optimizers.SGD(lr=0.001, momentum=0.9)
 
-imported_model = applications.VGG16(weights = 'imagenet', include_top=False, input_shape=(img_width, img_height, 3))
+imported_model = applications.VGG16(weights='imagenet', include_top=False, input_shape=(img_width, img_height, 3))
 
 # Freeze layers
-for layer in imported_model.layers[:5]:
+for layer in imported_model.layers[:]:
     layer.trainable = False
 
 # Custom layers
 model = Sequential()
 model.add(imported_model)
 model.add(Flatten())
-model.add(Dense(512, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(512, activation='relu'))
+model.add(Dense(128, activation='relu'))
+#model.add(Dropout(0.5))
+#model.add(Dense(512, activation='relu'))
 model.add(Dense(29, activation='softmax'))
 
 model.summary()
@@ -108,6 +108,24 @@ history = model.fit_generator(
 fitting_time = time.time() - start_time
 print('\n-----\n')
 print(f'Training time: {fitting_time}')
+
+#Confusion Matrix
+from sklearn.metrics import classification_report,confusion_matrix
+import numpy as np
+#Compute probabilities
+#Assign most probable label
+Y_pred = model.predict_generator(validation_generator, steps=nb_validation_samples // batch_size+1)
+y_pred = np.argmax(Y_pred, axis=1)
+
+y_true = validation_generator.classes
+
+print(len(Y_pred))
+print(len(y_true))
+#Plot statistics
+#print( 'Analysis of results' )
+#target_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+print(classification_report(y_true, y_pred))
+print(confusion_matrix(y_true, y_pred))
 
 #Saving model and weights
 from keras.models import model_from_json
