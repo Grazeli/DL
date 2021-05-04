@@ -49,24 +49,24 @@ name = 'test_transfer_learning'
 epochs = 10
 opti = optimizers.SGD(lr=0.0001, momentum=0.9)
 
-model = applications.VGG16(weights = 'imagenet', include_top=False, input_shape=(img_width, img_height, 3))
+imported_model = applications.VGG16(weights = 'imagenet', include_top=False, input_shape=(img_width, img_height, 3))
 
 # Freeze layers
-for layer in model.layers[:5]:
+for layer in imported_model.layers[:5]:
     layer.trainable = False
 
 # Custom layers
-x = model.output
-x = Flatten()(x)
-x = Dense(512, activation='relu')(x)
-x = Dropout(0.5)(x)
-x = Dense(512, activation='relu')(x)
-predictions = Dense(29, activation='softmax')(x)
+model = Sequential()
+model.add(imported_model)
+model.add(Flatten())
+model.add(Dense(512, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(512, activation='relu'))
+model.add(Dense(29, activation='softmax'))
 
-model_final = Model(inputs = model.inputs, output = predictions)
+model.summary()
 
-
-model_final.compile(loss='categorical_crossentropy', optimizer=opti, metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer=opti, metrics=['accuracy'])
 
 # Data generators
 train_datagen = ImageDataGenerator(
@@ -96,7 +96,7 @@ early = EarlyStopping(monitor='val_accuracy', min_delta=0, patience=10, verbose=
 
 start_time = time.time()
 
-history = model_final.fit_generator(
+history = model.fit_generator(
     train_generator,
     steps_per_epoch = nb_train_samples // batch_size,
     epochs = epochs,
@@ -108,5 +108,13 @@ history = model_final.fit_generator(
 fitting_time = time.time() - start_time
 print('\n-----\n')
 print(f'Training time: {fitting_time}')
+
+#Saving model and weights
+from keras.models import model_from_json
+model_json = model.to_json()
+with open('model.json', 'w') as json_file:
+        json_file.write(model_json)
+weights_file = "weights-" + name + ".hdf5"
+model.save_weights(weights_file,overwrite=True)
 
 plot_training(history, name)
