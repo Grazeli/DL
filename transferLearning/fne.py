@@ -63,7 +63,7 @@ def full_network_embedding(model, image_paths, batch_size, input_tensor, target_
                 cv_img = cv2.imread(img_path)
                 try:
                     cv_img_resize = cv2.resize(cv_img, input_reshape)
-                    img_batch[i] = np.asarray(cv_img_resize, dtype=np.float32)[:, :, ::-1]
+                    img_batch[i] = applications.vgg16.preprocess_input(np.asarray(cv_img_resize, dtype=np.float32))
                 except:
                     print(img_path)
 

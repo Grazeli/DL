@@ -5,6 +5,7 @@ from fne import full_network_embedding
 from sklearn.metrics import classification_report,confusion_matrix
 import numpy as np
 import time
+import pickle
 
 if __name__ == '__main__':
     # This shows an example of calling the full_network_embedding method using
@@ -110,13 +111,17 @@ if __name__ == '__main__':
     start_time = time.time()
     print(f'Training time: {training_time}', flush=True)
     print('\n-----\n')
+    model_filename = "model.pkl"
+    with open(os.path.join(outputs_path, model_filename), 'wb') as file:
+        pickle.dump(clf, file)
+    print('Model saved successfully', flush=True)
 
     #Test SVM with the validation set.
     predicted_labels = clf.predict(fne_features_val)
     print('Done testing SVM on extracted features of validation set')
     predict_time = time.time() - start_time
     start_time = time.time()
-    print(f'Feature extraction (validation) time: {predict_time}', flush=True)
+    print(f'Prediction time: {predict_time}', flush=True)
     print('\n-----\n')
     np.save(os.path.join(outputs_path, 'predictions.npy'), predicted_labels)
 
