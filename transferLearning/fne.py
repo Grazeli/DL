@@ -63,8 +63,9 @@ def full_network_embedding(model, image_paths, batch_size, input_tensor, target_
                 cv_img = cv2.imread(img_path)
                 try:
                     cv_img_resize = cv2.resize(cv_img, input_reshape)
-                    img_batch[i] = applications.vgg16.preprocess_input(np.asarray(cv_img_resize, dtype=np.float32))
-                except:
+                    img_batch[i] = applications.resnet50.preprocess_input(np.asarray(cv_img_resize, dtype=np.float32))
+                except Exception as excep:
+                    print(excep)
                     print(img_path)
 
             feature_vals = sess.run(tensorOutputs, feed_dict={x0: img_batch})

@@ -6,6 +6,17 @@ from sklearn.metrics import classification_report,confusion_matrix
 import numpy as np
 import time
 import pickle
+import tensorflow as tf
+
+
+def get_target_tensors_ResNet50():
+    tensor_names = [t.name for op in tf.get_default_graph().get_operations() for t in op.values()]
+    target_tensors = []
+    for name in tensor_names:
+        if name.startswith("activation"):
+            target_tensors.append(name)
+    return target_tensors
+
 
 if __name__ == '__main__':
     # This shows an example of calling the full_network_embedding method using
@@ -15,14 +26,14 @@ if __name__ == '__main__':
 
     # Load model
     img_width, img_height = 224, 224
-    applications.VGG16(weights = "imagenet", include_top=True, input_shape = (img_width, img_height, 3))
+    applications.ResNet50(weights = "imagenet", include_top=True, input_shape = (img_width, img_height, 3))
     graph_d = K.get_session().graph_def
 
     # Define input and target tensors, that is where we want
     #to enter data, and which activations we wish to extract
     input_tensor = 'input_1:0'
-    target_tensors = ['block1_conv1/Relu:0','block1_conv2/Relu:0','block2_conv1/Relu:0','block2_conv2/Relu:0','block3_conv1/Relu:0','block3_conv2/Relu:0','block3_conv3/Relu:0','block4_conv1/Relu:0','block4_conv2/Relu:0','block4_conv3/Relu:0','block5_conv1/Relu:0','block5_conv2/Relu:0','block5_conv3/Relu:0','fc1/Relu:0','fc2/Relu:0']
-
+    #target_tensors = ['block1_conv1/Relu:0','block1_conv2/Relu:0','block2_conv1/Relu:0','block2_conv2/Relu:0','block3_conv1/Relu:0','block3_conv2/Relu:0','block3_conv3/Relu:0','block4_conv1/Relu:0','block4_conv2/Relu:0','block4_conv3/Relu:0','block5_conv1/Relu:0','block5_conv2/Relu:0','block5_conv3/Relu:0','fc1/Relu:0','fc2/Relu:0']
+    target_tensors = get_target_tensors_ResNet50()
     start_time = time.time()
 
     # Define data splits
