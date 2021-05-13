@@ -4,8 +4,9 @@ import tensorflow as tf
 import cv2
 from keras import applications
 import keras.backend as K
+from sklearn.decomposition import PCA
 
-def full_network_embedding(model, image_paths, batch_size, input_tensor, target_tensors, input_reshape, stats=np.empty((0, 0))):
+def full_network_embedding(model, image_paths, batch_size, input_tensor, target_tensors, input_reshape, pca=None, stats=np.empty((0, 0))):
     ''' 
     Generates the Full-Network embedding[1] of a list of images using a pre-trained
     model (input parameter model) with its computational graph loaded. Tensors used 
@@ -63,7 +64,7 @@ def full_network_embedding(model, image_paths, batch_size, input_tensor, target_
                 cv_img = cv2.imread(img_path)
                 try:
                     cv_img_resize = cv2.resize(cv_img, input_reshape)
-                    img_batch[i] = applications.resnet50.preprocess_input(np.asarray(cv_img_resize, dtype=np.float32))
+                    img_batch[i] = applications.vgg16.preprocess_input(np.asarray(cv_img_resize, dtype=np.float32))
                 except Exception as excep:
                     print(excep)
                     print(img_path)
@@ -94,9 +95,15 @@ def full_network_embedding(model, image_paths, batch_size, input_tensor, target_
     # DISCRETIZATION STEP
     th_pos = 0.15
     th_neg = -0.25
-    features[features > th_pos] = 1
-    features[features < th_neg] = -1
-    features[[(features >= th_neg) & (features <= th_pos)][0]] = 0
+    if not pca:
+        pca = PCA(n_components=0.65)
+        features = pca.fit_transform(features)
+        print(f"Number of PCA components: {pca.n_components_}")
+        return features, stats, pca
+    features = pca.transform(features)
+    #features[features > th_pos] = 1
+    #features[features < th_neg] = -1
+    #features[[(features >= th_neg) & (features <= th_pos)][0]] = 0
 
     # Return
     return features, stats

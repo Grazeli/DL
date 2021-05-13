@@ -17,6 +17,14 @@ def get_target_tensors_ResNet50():
             target_tensors.append(name)
     return target_tensors
 
+def get_target_tensors_MobileNetV2():
+    tensor_names = [t.name for op in tf.get_default_graph().get_operations() for t in op.values()]
+    target_tensors = []
+    for name in tensor_names:
+        if name.endswith("Relu6:0"):
+            target_tensors.append(name)
+    return target_tensors
+
 
 if __name__ == '__main__':
     # This shows an example of calling the full_network_embedding method using
@@ -26,14 +34,15 @@ if __name__ == '__main__':
 
     # Load model
     img_width, img_height = 224, 224
-    applications.ResNet50(weights = "imagenet", include_top=True, input_shape = (img_width, img_height, 3))
+    applications.VGG16(weights = "imagenet", include_top=True, input_shape = (img_width, img_height, 3))
     graph_d = K.get_session().graph_def
 
     # Define input and target tensors, that is where we want
     #to enter data, and which activations we wish to extract
     input_tensor = 'input_1:0'
-    #target_tensors = ['block1_conv1/Relu:0','block1_conv2/Relu:0','block2_conv1/Relu:0','block2_conv2/Relu:0','block3_conv1/Relu:0','block3_conv2/Relu:0','block3_conv3/Relu:0','block4_conv1/Relu:0','block4_conv2/Relu:0','block4_conv3/Relu:0','block5_conv1/Relu:0','block5_conv2/Relu:0','block5_conv3/Relu:0','fc1/Relu:0','fc2/Relu:0']
-    target_tensors = get_target_tensors_ResNet50()
+    target_tensors = ['block1_conv1/Relu:0','block1_conv2/Relu:0','block2_conv1/Relu:0','block2_conv2/Relu:0','block3_conv1/Relu:0','block3_conv2/Relu:0','block3_conv3/Relu:0','block4_conv1/Relu:0','block4_conv2/Relu:0','block4_conv3/Relu:0','block5_conv1/Relu:0','block5_conv2/Relu:0','block5_conv3/Relu:0','fc1/Relu:0','fc2/Relu:0']
+    #target_tensors = get_target_tensors_ResNet50()
+    #target_tensors = get_target_tensors_MobileNetV2()
     start_time = time.time()
 
     # Define data splits
@@ -85,7 +94,7 @@ if __name__ == '__main__':
     batch_size = 128
     input_reshape = (img_width, img_height)
     # Call FNE method on the train set
-    fne_features_train, fne_stats_train = full_network_embedding(graph_d, train_images, batch_size, input_tensor, target_tensors, input_reshape)
+    fne_features_train, fne_stats_train, pca = full_network_embedding(graph_d, train_images, batch_size, input_tensor, target_tensors, input_reshape)
     print('Done extracting features of training set. Embedding size:', fne_features_train.shape)
     extraction_time_train = time.time() - start_time
     start_time = time.time()
@@ -101,7 +110,7 @@ if __name__ == '__main__':
     # fne_stats = np.load('stats.npy')
 
     # Call FNE method on the validation set, using stats from training
-    fne_features_val, fne_stats_val = full_network_embedding(graph_d, test_images, batch_size, input_tensor, target_tensors, input_reshape, stats=fne_stats_train)
+    fne_features_val, fne_stats_val = full_network_embedding(graph_d, test_images, batch_size, input_tensor, target_tensors, input_reshape, pca=pca, stats=fne_stats_train)
     print('Done extracting features of validation set')
     extraction_time_val = time.time() - start_time
     start_time = time.time()
